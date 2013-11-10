@@ -1,13 +1,17 @@
 #!/usr/bin/perl
 #
 # THIS IS LICENSED UNDER  GPL YOU CORPORATE SCUM ! IF MODIFY THIS YOU MUST
-# DISTRIBUTE IT ! 
+# DISTRIBUTE IT ! IF SOME FUCKS ON THE INTERNET LIKES RUSTY SPOONS, THERE
+# MIGHT BE SOME OTHERS LIKING RUSTY KNIVES !
 #
 # http://www.gnu.org/licenses/gpl-3.0.html
 #
-# Copyright Guillaume Beaulieu 2008
+# Copyright Guillaume Beaulieu 2008-2013
 # 
 # A lot inspired of David Firth's psnup
+#
+# The documentation for the pdfpages packages that basically
+# http://mirrors.ctan.org/macros/latex/contrib/pdfpages/pdfpages.pdf
 # 
 use Getopt::Std;
 
@@ -25,7 +29,7 @@ $randomLatexFile="punksnotdead.latex";
 $pdflatex="pdflatex";
 $tempfileDir="/var/tmp"; ## /var/tmp is standard on many unix systems
 
-getopt("lrh");
+getopt("nEOl:r:t:b:");
 
 if ((scalar @ARGV) == 0) {
 	print "must have at least an input file ... \n\n\n";
@@ -50,6 +54,8 @@ $marginsize=0.25;
 $width2 = $width;
 $width2 =~ s/(.*)pt/\1/;
 
+$off = $marginsize/2;
+print $off;
 #print "trimmedwidth = $width\n";
 $scale = 1 - ($marginsize * 144) / ($width2);
 print "final scale = $scale\n";
@@ -60,7 +66,13 @@ print TEMP <<EOF;
 \\geometry{papersize={$width,$height}}
 \\usepackage{pdfpages}
 \\begin{document}
-\\includepdf[fitpaper=$fitpaper,pages=-, scale=$scale]{$infile}
+EOF
+
+print TEMP <<EOF;
+\\includepdf[fitpaper=$fitpaper,pages=-, scale=$scale, offset=${off}pt ${off}pt]{$infile}
+EOF
+
+print TEMP <<EOF;
 \\thispagestyle{empty}
 \\end{document}
 EOF
@@ -73,6 +85,9 @@ $curdir = $ENV{"PWD"};
 chdir $tempfileDir;
 `$pdflatex --interaction batchmode $randomLatexFile > $msgFile`;
 chdir $curdir;
+if ($opt_n) {
+	print $tempfileDir;
+}
 if (-f "$tempfileDir/$uniqueName.scaled.aux") {  
 	## ie if LaTeX didn't choke
 	if (not($outfile eq "")) {
@@ -122,9 +137,13 @@ This software adds margins around a pdf file
 
 pdfbook Options infile.pdf [outfile.pdf]
 Options:
--sXX : XX being the number of pages per signatures.
--q : ask this software to shut up
--b : insert a blank page at the beginning of the document
+ -l Left margin
+ -r right margin
+ -t top margin
+ -b bottom margin
+ -E even pages only
+ -O odd pages only
+ -n no-tidy
 EOF
 	exit(666);
 }
