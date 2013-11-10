@@ -87,9 +87,6 @@ if (-f "$tempfileDir/$uniqueName.scaled.aux") {
 	print "  Failed: output file not written";
 }
 
-
-
-
 sub getPdfInfo {
 	($uniqueName,)=split /\./, $infile;
 	$randomLatexFile="$uniqueName.scaled.latex";
@@ -110,7 +107,7 @@ sub getPdfInfo {
 	# trim the whitespace
 	chop $unit;
 	$width =~ s/\s//g;
-	# This part will flake at some point 
+	# This part will flake at some point (EG: whenever unit isn't fucking point ?) 
 	if ($unit eq "pts") {
 		$unit = "pt";
 	}
@@ -121,7 +118,7 @@ sub help {
 	print <<EOF;
 pdfmarginalize 0.01
 
-This software just rearrange pdf document pages into signatures.
+This software adds margins around a pdf file
 
 pdfbook Options infile.pdf [outfile.pdf]
 Options:
