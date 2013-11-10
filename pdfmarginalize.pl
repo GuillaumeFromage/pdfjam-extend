@@ -54,7 +54,14 @@ $marginsize=0.25;
 $width2 = $width;
 $width2 =~ s/(.*)pt/\1/;
 
-$off = $marginsize/2;
+$paperwidth=8.5;
+$paperheight=11;
+
+
+
+$offX = $marginsize; # that should be double 
+$offY = $marginsize*$paperheight/$paperwidth;
+
 print $off;
 #print "trimmedwidth = $width\n";
 $scale = 1 - ($marginsize * 144) / ($width2);
@@ -62,14 +69,14 @@ print "final scale = $scale\n";
 # Hack around, but double your \
 print TEMP <<EOF;
 \\documentclass[$orientation]{article}
-\\usepackage[vcentering,dvips]{geometry}
+\\usepackage[left=0in,right=0in,top=0in,bottom=0in,dvips]{geometry}
 \\geometry{papersize={$width,$height}}
 \\usepackage{pdfpages}
 \\begin{document}
 EOF
 
 print TEMP <<EOF;
-\\includepdf[fitpaper=$fitpaper,pages=-, scale=$scale, offset=${off}pt ${off}pt]{$infile}
+\\includepdf[fitpaper=$fitpaper,pages=-, scale=$scale, offset=${offX}in ${offY}in]{$infile}
 EOF
 
 print TEMP <<EOF;
