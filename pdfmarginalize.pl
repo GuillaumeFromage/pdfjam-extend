@@ -29,7 +29,7 @@ $randomLatexFile="punksnotdead.latex";
 $pdflatex="pdflatex";
 $tempfileDir="/var/tmp"; ## /var/tmp is standard on many unix systems
 
-getopt("nEOl:r:t:b:");
+getopt("nLRl:r:t:b:");
 
 if ((scalar @ARGV) == 0) {
 	print "must have at least an input file ... \n\n\n";
@@ -45,35 +45,38 @@ open TEMP, "> $tempfileDir/$randomLatexFile";
 
 $marginsize=0.25;
 
-# print "width = $width\n";
-# This is the ugly mathematical part: we calculate which percentage we must 
-# chop from each pages which is equal to the (the first one mean 100%) 
-
-# 1 - ((space in inches) * 2 * 72) / (total page # width in pt). 
-
-print $pgNb;
 
 $width2 = $width;
 $width2 =~ s/(.*)pt/\1/;
 
-$paperwidth=8.5;
-$paperheight=11;
-
 $offX = $marginsize; # that should be double 
-$offY = $marginsize*$paperheight/$paperwidth;
+$offY = $marginsize*$height/$width;
 
-print $off;
+# set a few options in the document style, see
+# http://www.latex-community.org/forum/viewtopic.php?f=5&t=1076
+if ($opt_L) {
+  $sides = "twoside,openleft";
+} elsif ($opt_R) {
+  $sides = "twoside,openright";
+} else {
+  $sides = "oneside";
+}
+
 #print "trimmedwidth = $width\n";
+# This is the ugly mathematical part: we calculate which percentage we must 
+# chop from each pages which is equal to the (the first one mean 100%) 
+# 1 - ((space in inches) * 2 * 72) / (total page # width in pt). 
 $scale = 1 - ($marginsize * 144) / ($width2);
 print "final scale = $scale\n";
 # Hack around, but double your \
 print TEMP <<EOF;
-\\documentclass[$orientation]{article}
+\\documentclass[$sides,$orientation]{article}
 \\usepackage[left=0in,right=0in,top=0in,bottom=0in,dvips]{geometry}
 \\geometry{papersize={$width,$height}}
 \\usepackage{pdfpages}
 \\begin{document}
 EOF
+
 
 
 if ($opt_O || $opt_E) {
@@ -152,13 +155,15 @@ This software adds margins around a pdf file
 
 pdfbook Options infile.pdf [outfile.pdf]
 Options:
- -l Left margin
- -r right margin
+ -l Left margin (inner)
+ -r right margin (outer)
  -t top margin
  -b bottom margin
- -E even pages only
- -O odd pages only (-EO will do both - its a feature :D)
+ -L two sided the document is assumed to open on a left page
+ -R two sided, the document is assumed to open on a right page
  -n no-tidy
+
+There's some shit I don't understand with getopt, use -- to separate the files from the arguments
 EOF
 	exit(666);
 }
