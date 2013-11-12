@@ -51,13 +51,13 @@ $marginsize=0.25;
 
 # 1 - ((space in inches) * 2 * 72) / (total page # width in pt). 
 
+print $pgNb;
+
 $width2 = $width;
 $width2 =~ s/(.*)pt/\1/;
 
 $paperwidth=8.5;
 $paperheight=11;
-
-
 
 $offX = $marginsize; # that should be double 
 $offY = $marginsize*$paperheight/$paperwidth;
@@ -75,10 +75,18 @@ print TEMP <<EOF;
 \\begin{document}
 EOF
 
-print TEMP <<EOF;
+
+if ($opt_O || $opt_E) {
+  # if we touch only odd or oven pages
+  print TEMP <<EOF;
+\\includepdf[fitpaper=$fitpaper, scale=$scale, offset=${offX}in ${offY}in]{$infile}
+EOF
+} else {
+  print TEMP <<EOF;
 \\includepdf[fitpaper=$fitpaper,pages=-, scale=$scale, offset=${offX}in ${offY}in]{$infile}
 EOF
-
+}
+ 
 print TEMP <<EOF;
 \\thispagestyle{empty}
 \\end{document}
@@ -149,7 +157,7 @@ Options:
  -t top margin
  -b bottom margin
  -E even pages only
- -O odd pages only
+ -O odd pages only (-EO will do both - its a feature :D)
  -n no-tidy
 EOF
 	exit(666);
