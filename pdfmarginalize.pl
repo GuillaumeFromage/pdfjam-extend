@@ -63,6 +63,7 @@ if (($opt_l + $opt_r)/$width >= ($opt_t + $opt_b)/$height) {
   $marginsize = $opt_l + $opt_r;
   $scale = 1 - ($marginsize) / ($width);
 
+  # print "marginsize = $marginsize ; opt_l = $opt_l ; opt_r = $opt_r ;\n";
   # in case of epic debug :D
   # print "final scale = $scale\n";
   
@@ -80,11 +81,13 @@ if (($opt_l + $opt_r)/$width >= ($opt_t + $opt_b)/$height) {
     $offY = 0;
   } elsif($opt_t && !$opt_b) {
     # this almost works for small values of t
-    $offY = $opt_t - (1-$scale)*$height;
-    print "$offY = -$opt_t + (1-$scale)*$height;\n\n"
+    $Ymargins = (1 - $scale) * $height;
+    print "Ymargins = $Ymargins\n";
+    $offY =  (1-$scale)*$height/2 - $opt_t;
+    # print "$offY = (1-$scale)*$height/2 - $opt_t";
   } elsif(!$opt_t && $opt_b) {
     # this is likely to be as busted as above
-    $offY = -$opt_b + $marginsize*$height/$width;
+    $offY = $opt_b - (1-$scale)*$height/2;
   } elsif((($opt_l + $opt_r)/$width == ($opt_t + $opt_b)/$height)) {
     # I wouldn't trust my weight on those maths.
 
