@@ -29,8 +29,7 @@ $randomLatexFile="punksnotdead.latex";
 $pdflatex="pdflatex";
 $tempfileDir="/var/tmp"; ## /var/tmp is standard on many unix systems
 
-getopt("nLRl:r:t:b:");
-
+getopts("nLRl:r:t:b:");
 if ((scalar @ARGV) == 0) {
 	print "must have at least an input file ... \n\n\n";
 	help();
@@ -44,13 +43,84 @@ $msgFile="$msgFile.msg";
 open TEMP, "> $tempfileDir/$randomLatexFile";
 
 $marginsize=0.25;
+# the tolerance for users margins that dont fit quite right
+$tolerance = 0.05;
 
-
+# fuck this point bullshit
 $width2 = $width;
 $width2 =~ s/(.*)pt/\1/;
+$width = $width2/72;
+$height2 = $height;
+$height2 =~ s/(.*)pt/\1/;
+$height = $height2/72;
 
-$offX = $marginsize; # that should be double 
-$offY = $marginsize*$height/$width;
+if (($opt_l + $opt_r)/$width >= ($opt_t + $opt_b)/$height) {
+  # so, if we're shrinking more on the horizontal than on the vertical
+
+  # This is the ugly mathematical part: we calculate which percentage we must 
+  # chop from each pages which is equal to the (the first one mean 100%) 
+  # 1 - ((space in inches) * 72) / (total page # width in pt). 
+  $marginsize = $opt_l + $opt_r;
+  $scale = 1 - ($marginsize) / ($width);
+
+  # in case of epic debug :D
+  # print "final scale = $scale\n";
+  
+  # then we calculate the offsets
+  $offX = $opt_l - $marginsize / 2; # Its easy ; draw a picture to understand !
+
+  # $offY is tricky, because by default its centered (like the one above)
+  # and is scaled to a factor that isn't the margins on the side. If no margins
+  # are specified, then we just keep it centered, if there is either a top or a
+  # bottom margin, we set it from that distance from that location. If there is
+  # both, we're just fucked as we're dealing with floating point crap, and we
+  # can't really figure out which margins to use.
+  if (!$opt_t && !$opt_b) {
+    # this works
+    $offY = 0;
+  } elsif($opt_t && !$opt_b) {
+    # this almost works for small values of t
+    $offY = $opt_t - (1-$scale)*$height;
+    print "$offY = -$opt_t + (1-$scale)*$height;\n\n"
+  } elsif(!$opt_t && $opt_b) {
+    # this is likely to be as busted as above
+    $offY = -$opt_b + $marginsize*$height/$width;
+  } elsif((($opt_l + $opt_r)/$width == ($opt_t + $opt_b)/$height)) {
+    # I wouldn't trust my weight on those maths.
+
+    # okay, the margins actually fit so we just use either 
+    $offY = $opt_b - $marginsize*$height/$width;
+  } elsif((($opt_l + $opt_r)/$width - ($opt_t + $opt_b)/$height)*$height > -$tolerance &&
+    (($opt_l + $opt_r)/$width - ($opt_t + $opt_b)/$height)*$height < $tolerance) {
+    # I didn't actually got to test that as the shit above was busted
+
+    # okay, the margins "sorta" fit so we just use either and warn
+    $difference = $opt_b - (($opt_l + $opt_r)/$width - ($opt_t + $opt_b)/$height)*$height;
+    $offY = $marginsize*$height/$width - $opt_t;
+    print <<WARN;
+    Motherfucker ! You specified a top, a bottom and margins on the side. 
+    We're trying to keep the aspect ratio and the margins you specified
+    aren't exactly even (they can't be, its floating point number, blah blah), 
+    so we used the top margin and the bottom margin you specified will be off
+    by $difference.
+WARN
+  } else {
+    # This actually seems to work
+
+    # okay, if we're here the user is just fucking with us, die horribly 
+    print <<ERROR;
+    Motherfucker ! You specified a top, a bottom and margins on the side. 
+    We're trying to keep the aspect ratio and the margins you specified
+    are just too wrong to be dealt with. BTW, fuck you.
+ERROR
+    die(665);
+  }
+} else {
+  # left as a exercise to the user. Or just tell the user to use pdf90. Or 
+  # just reverse the dimensions or something. This is annoying maths after
+  # all !
+}
+
 
 # set a few options in the document style, see
 # http://www.latex-community.org/forum/viewtopic.php?f=5&t=1076
@@ -63,11 +133,6 @@ if ($opt_L) {
 }
 
 #print "trimmedwidth = $width\n";
-# This is the ugly mathematical part: we calculate which percentage we must 
-# chop from each pages which is equal to the (the first one mean 100%) 
-# 1 - ((space in inches) * 2 * 72) / (total page # width in pt). 
-$scale = 1 - ($marginsize * 144) / ($width2);
-print "final scale = $scale\n";
 # Hack around, but double your \
 print TEMP <<EOF;
 \\documentclass[$sides,$orientation]{article}
@@ -76,8 +141,6 @@ print TEMP <<EOF;
 \\usepackage{pdfpages}
 \\begin{document}
 EOF
-
-
 
 if ($opt_O || $opt_E) {
   # if we touch only odd or oven pages
@@ -155,7 +218,7 @@ This software adds margins around a pdf file
 
 pdfbook Options infile.pdf [outfile.pdf]
 Options:
- -l Left margin (inner)
+ -l Left margin (inner, in inches, like all other dimensions below)
  -r right margin (outer)
  -t top margin
  -b bottom margin
