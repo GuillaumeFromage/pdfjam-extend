@@ -22,6 +22,8 @@ Two tools I hacked from scratch (ish) from the basis in pdfjam:
 
 All of this is in a pretty broken/works for me state, but 
 there is something really fucking nice about being able to
-properly print goddamn pdf, and playing around with them.
+properly print goddamn pdf, and playing around with them. I
+scavenged most of that on old partitions of old computers
+and just "backup online" stuff that should be public anyways.
 
 
