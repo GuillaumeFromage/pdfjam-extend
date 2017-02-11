@@ -1,3 +1,4 @@
+#!/bin/sh
 #patate.pdf contient genre 2 pages par page, genre page 1 pi 2 sur la page 1, page 3 pi 4 sur la page 2
 pdfinfo patate.pdf
 # ca vous donne le nombre de page ($NBPG) pi la taille ($SIZE)
