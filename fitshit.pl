@@ -98,7 +98,7 @@ $width = ($outputSizeWidth - (2 * $margin{"left"})) * $res;
 $height = ($outputSizeHeight - (2 * $margin{"top"})) * $res;
 my $size = ($width) . 'x' . ($height);
 print "convert $file -units PixelsPerInch -resample $res -crop $size +repage +adjoin \"fichier_%d.pdf\"";
-`convert $file -units PixelsPerInch -resample $res -crop $size +repage +adjoin \"fichier_%d.pdf\"`;
+`convert -density $res $file -units PixelsPerInch -resample $res -crop $size +repage +adjoin \"fichier_%d.pdf\"`;
 
 my $pdfjoinofdeath = "";
 for(my $y = 0 ; $y < $minimalSetup->{"numH"} ; $y++) { # unecessary, but more visual way to code
