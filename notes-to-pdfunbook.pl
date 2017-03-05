@@ -1,8 +1,41 @@
-#!/bin/sh
+#!/usr/bin/perl
+
+usage() {
+  echo "$0 [--booked] [--split-horizontally] [--duplicated-vertically] [--verbose] --file=patate.pdf";
+  echo << EOF
+--booked   rearrange the page as they were bound in signature (by default, signatures
+           are assumed to be half of the document page)
+--split-{horizontally|vertically} the document is split (in half by default) on the
+                                  specified axis.
+--duplicated-{horizontally|vertically} the document is duplicated (in half by 
+                                       default) on the specified axis.
+--verbose is obvious
+--file  the file.
+
+The output will be patate-unbooked.pdf ; the pages will be singular and in their 
+original order.
+
+Not all options specified are currently implemented.
+           
+}
+EOF
+}
+
+GetOptions ('booked' => \$booked, 'split-horizontally' => \$splitVert, 'duplicated-vertically' => \$dupVert, 'verbose' => \$verbose, 'file=s' => \$file) or usage();
+
+if ($file eq '') {
+  usage();
+}
+
 #patate.pdf contient genre 2 pages par page, genre page 1 pi 2 sur la page 1, page 3 pi 4 sur la page 2
 pdfinfo patate.pdf
 # ca vous donne le nombre de page ($NBPG) pi la taille ($SIZE)
 for i in $(seq 1 $NBPG) ; do pdfjoin brochure-anticap_final.pdf $i -o page$(echo $i*2-1 | bc).pdf; done
+
+
+
+# vv Ca, c'est si on rasterize, ca arrive qu'on aille pas le choix de prendre le pdf tel quel...
+
 # ca sépare toute les pages en pdf d'une page (de deux pages)
 for i in $(seq 1 $NBPG) ; do convert -density 300 page$(echo $i*2-1 | bc).pdf -units PixelsPerInch -resample 300 -crop $UNFUCKEDSIZE +repage +adjoin page$(echo $i*2-1 | bc)-%d.png; done
 # ici, vous avez calculé $UNFUCKEDSIZE  à partir de la taille de la page 
