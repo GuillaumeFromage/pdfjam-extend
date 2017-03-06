@@ -107,26 +107,26 @@ for (my $i=1 ; $i<=$nbPage ; $i++) {
 # 
 # Vomit that shit in pdflatex
 #
+my $finalWidth = $selectWidth * $units{'pts'}
+my $finalHeight = $selectHeight * $units{'pts'}
 my $output = "\\batchmode
 \\documentclass[$paper,$direction]{article}
 \\usepackage[utf8]{inputenc}
 \\usepackage{pdfpages}
-\\pdfpagewidth 8.25in
-\\pdfpageheight 10.75in
+\\pdfpagewidth $finalWidth"."in
+\\pdfpageheight $finalHeight"."in
 \\begin{document}
 ";
-print "icite\n";
 for (my $i = 1; $i <= $nbPage ; $i++) {
-  print "icite2\n";
   for (my $j = 0 ; $j <= $iterNum ; $j++) {
-    print "$i $j\n";
     my $xOffset=0; 
     my $yOffset=0; 
     if ($iterDir == 'horiz') {
       $yOffset = ($j - 1) * $iterOffset * $units{'pts'};
     }
-    $realPageNum = $nbPage*2-1;
-    $output .=  "\\includepdfmerge[offset=$xOffset"."in 0in,fitpaper=false, noautoscale=true, rotateoversize=false]{page$realPageNum.pdf}}\n";
+    $realPageNum = $i*2-1;
+    # the offset is the offset to which put the pdf document on the page, 
+    $output .=  "\\includepdfmerge[offset=-$xOffset"."in 0in,fitpaper=false, noautoscale=true, rotateoversize=false]{page$realPageNum.pdf}}\n";
   }
 }
 
@@ -138,6 +138,8 @@ print OUTFILE $output;
 close OUTFILE;
 
 `pdflatex filexxx.latex`;
+
+copy('filexxx.pdf', $currentDir) or die("Can't copy file to temporary directory");
 
 # lets just not worry about the args, and assume its split horizontally and dupped vertically
 
