@@ -73,9 +73,9 @@ if ($dupVert) {
 my $currentDir = &Cwd::cwd();
 my $tempfileDir='/var/tmp';   #  /var/tmp is standard on most unix systems
 
-my $temp_dir = ($tempfileDir . '/fitshit-' . int(rand() *10000000));
+my $temp_dir = ($tempfileDir . '/pdfunbook-' . int(rand() *10000000));
 while ( -e $temp_dir) {
-	$temp_dir = $tempfileDir . '/fitshit-' . int(rand() *10000000);
+	$temp_dir = $tempfileDir . '/pdfunbook-' . int(rand() *10000000);
 	print "You're not lucky";
 }
 
@@ -90,9 +90,9 @@ chdir($temp_dir);
 # 
 # Split all the pages
 #
-for (my $i ; $i<$nbPage ; $i++) {
+for (my $i=1 ; $i<=$nbPage ; $i++) {
    my $futurePageNumber = $i*2-1;
-   `pdfjoin "$file" $i -o "$file$futurePageNumber.pdf"`;
+   `pdfjoin "$file" $i -o "page$futurePageNumber.pdf"`;
 }
 
 # lets just not worry about the args, and assume its split horizontally and dupped vertically
