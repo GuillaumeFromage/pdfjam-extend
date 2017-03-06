@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 
+use Cwd;
 use Getopt::Long;
+use File::Copy;
 
 sub usage() {
   print "$0 [--booked] [--split-horizontally] [--duplicated-vertically] [--verbose] --file=patate.pdf";
@@ -31,8 +33,72 @@ if ($file eq '') {
   usage();
 }
 
-print "pdfinfo $file | grep Pages | cut -d ':' -f 2 | tr -d ' '";
-my $nbPage = `pdfinfo "$file" | grep Pages | cut -d ':' -f 2 | tr -d ' '`;
+my $pdfinfo = 'pdfinfo';
+
+my $nbPage = `$pdfinfo "$file" | grep Pages | cut -d ':' -f 2 | tr -d ' '`;
+my %units = ("pts", 0.013836);
+my $info = `$pdfinfo "$file" | grep 'Page size:' | cut -d ':' -f 2`;
+(my $width, my $height, my $unit) = ($info =~ /\s*(\d+)\s{1}x\s{1}(\d+)\s*(\w+)/);
+
+print "Document is $width by $height in $unit and has $nbPage\n";
+
+# Step 0::
+#
+# Let's see in which directions the pages are laid
+#
+my $iterDir = 'hori';
+
+if ($splitVert) {
+  my $iterDir = 'verti';
+  my $iterOffset = $width / 2;
+} 
+# we'd need to code in case we want to split horizontally
+
+
+# Step 0.1::
+#
+# Let's see if part of the pages are junk
+#
+my $selectHeight = $height;
+my $selectWidth = $width;
+
+if ($dupVert) {
+  $selectHeight = $height / 2;
+}
+
+# Step 0.2::
+#
+# Let's initialize some shit 
+#
+my $currentDir = &Cwd::cwd();
+my $tempfileDir='/var/tmp';   #  /var/tmp is standard on most unix systems
+
+my $temp_dir = ($tempfileDir . '/fitshit-' . int(rand() *10000000));
+while ( -e $temp_dir) {
+	$temp_dir = $tempfileDir . '/fitshit-' . int(rand() *10000000);
+	print "You're not lucky";
+}
+
+# File moving
+mkdir($temp_dir) or die("Can't create temporary directory for file processing\n");
+copy($file, $temp_dir) or die("Can't copy file to temporary directory");
+chdir($temp_dir);
+	
+
+
+# Step 1
+# 
+# Split all the pages
+#
+for (my $i ; $i<$nbPage ; $i++) {
+   my $futurePageNumber = $i*2-1;
+   `pdfjoin "$file" $i -o "$file$futurePageNumber.pdf"`;
+}
+
+# lets just not worry about the args, and assume its split horizontally and dupped vertically
+
+
+# first
 
 
 #patate.pdf contient genre 2 pages par page, genre page 1 pi 2 sur la page 1, page 3 pi 4 sur la page 2
