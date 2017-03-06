@@ -27,7 +27,7 @@ EOF
   exit 0;
 }
 
-GetOptions ('booked' => \$booked, 'split-horizontally' => \$splitVert, 'duplicated-vertically' => \$dupVert, 'verbose' => \$verbose, 'file=s' => \$file) or usage();
+GetOptions ('booked' => \$booked, 'split-horizontally' => \$splitHoriz, 'duplicated-vertically' => \$dupVert, 'verbose' => \$verbose, 'file=s' => \$file) or usage();
 
 if ($file eq '') {
   usage();
@@ -46,11 +46,18 @@ print "Document is $width by $height in $unit and has $nbPage\n";
 #
 # Let's see in which directions the pages are laid
 #
-my $iterDir = 'hori';
+my $iterDir = 'verti';
+my $selectHeight = $height;
+my $selectWidth = $width;
 
-if ($splitVert) {
-  my $iterDir = 'verti';
+my $iterNum = 1;
+if ($splitHoriz) {
+  print "horizontal split\n";
+
+  my $iterDir = 'horiz';
+  my $iterNum = 2;
   my $iterOffset = $width / 2;
+  $selectWidth = $width / 2;
 } 
 # we'd need to code in case we want to split horizontally
 
@@ -59,8 +66,6 @@ if ($splitVert) {
 #
 # Let's see if part of the pages are junk
 #
-my $selectHeight = $height;
-my $selectWidth = $width;
 
 if ($dupVert) {
   $selectHeight = $height / 2;
@@ -90,10 +95,49 @@ chdir($temp_dir);
 # 
 # Split all the pages
 #
+#TODO: make this work for any type of page subdivision
+#TODO: there is way to skip that step and go straight to pdflatex
 for (my $i=1 ; $i<=$nbPage ; $i++) {
    my $futurePageNumber = $i*2-1;
    `pdfjoin "$file" $i -o "page$futurePageNumber.pdf"`;
 }
+
+
+# Step 2
+# 
+# Vomit that shit in pdflatex
+#
+my $output = "\\batchmode
+\\documentclass[$paper,$direction]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage{pdfpages}
+\\pdfpagewidth 8.25in
+\\pdfpageheight 10.75in
+\\begin{document}
+";
+print "icite\n";
+for (my $i = 1; $i <= $nbPage ; $i++) {
+  print "icite2\n";
+  for (my $j = 0 ; $j <= $iterNum ; $j++) {
+    print "$i $j\n";
+    my $xOffset=0; 
+    my $yOffset=0; 
+    if ($iterDir == 'horiz') {
+      $yOffset = ($j - 1) * $iterOffset * $units{'pts'};
+    }
+    $realPageNum = $nbPage*2-1;
+    $output .=  "\\includepdfmerge[offset=$xOffset"."in 0in,fitpaper=false, noautoscale=true, rotateoversize=false]{page$realPageNum.pdf}}\n";
+  }
+}
+
+$output .= "\\end{document}";
+
+print "puking filexxx.latex \n";
+open (OUTFILE, '>>filexxx.latex');
+print OUTFILE $output;
+close OUTFILE;
+
+`pdflatex filexxx.latex`;
 
 # lets just not worry about the args, and assume its split horizontally and dupped vertically
 
