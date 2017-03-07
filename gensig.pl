@@ -75,6 +75,13 @@ for (my $i = 0; $i < $nbpg/2**($folds+1) ; $i++) {
       }
     }
     if ($folds == 2) {
+      # A lot of the wizardry in here revolves around: (-1)**($j%3) and such. I've just 
+      # selected the modulos that matched the "pair that need positive value" (having a 
+      # even number as the power (eg: positive) and the "pair that needed negative 
+      # values (that have an even power). The spread have individual arbitrary shapes
+      # and follow linear progression. This is not how it should be coded. 
+
+      # also, yeah, this means if the page in the spread is 1-2 or 4-5       
       if (($j|2) != $j) {
         # these pages are flipped
         $output .= (($nbpg/2) + ((-1)**($j%3)*((($j>3)?$j%3:0) + (2*$i)) + (($j==0)?1:0))) . "f ";
