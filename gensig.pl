@@ -63,10 +63,10 @@ if ($signature % 2**($folds+1)) {
 my $output = '';
 # for each spread 
 for (my $i = 0; $i < $nbpg/2**($folds+1) ; $i++) {
-  #print "spread $i\n";
+  print "spread $i\n";
   # for each individual page in the spread
   for (my $j = 0; $j < 2**($folds+1) ; $j++) {
-    #print "page $j\n";
+    print "page $j\n";
     if ($folds == 1) {
       if ($j == 0 or $j == 3) {
          $output .= $nbpg - $i * ($folds + 1) - $j % ($folds + 1). " ";
@@ -74,6 +74,15 @@ for (my $i = 0; $i < $nbpg/2**($folds+1) ; $i++) {
          $output .= $j + $i * ($folds + 1) . " ";
       }
     }
+    if ($folds == 2) {
+      if (($j|2) != $j) {
+        # these pages are flipped
+        $output .= (($nbpg/2) + ((-1)**($j%3)*((($j>3)?$j%3:0) + (2*$i)) + (($j==0)?1:0))) . "f ";
+      } else {
+        $output .= (((($j%3)?1:0) * $nbpg) + ((-1)**(($j%5) +1))*(($i*2) + ($j%2) + (($j==6)?2:0))) . " ";
+      }         
+    }    
+        
   }
 }
 
