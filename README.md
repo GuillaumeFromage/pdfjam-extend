@@ -19,6 +19,11 @@ Two tools I hacked from scratch (ish) from the basis in pdfjam:
    when I reached for the code of the "marginalizer" (that one
    was a pain to write :D), I found gigantify. I've used 
    fitshit for a couple of project and it worked fine.
+ * gensig.pl generate signature orders for 1-2 folds signature
+   booklets.
+ * pdfunbook.pl unfucks the pdf that have been imposed with
+   pdfbook or such. It allows cutting pdfs in smaller pages,
+   fitshit.pl, but for multipages documents.
 
 All of this is in a pretty broken/works for me state, but 
 there is something really fucking nice about being able to
